@@ -58,15 +58,21 @@
 		}
 
 		/**
-		 * Add files to the Wordpress File Library.
+		 * Add files to the Wordpress File Library
+		 *
+		 * @return array IDs of the added files.
 		 */
 		public function save_to_wordpress() {
+			$attach_ids = [];
+
 			try {
-				$uploaded = $this->save_to_dir();
-				$this->save_to_db( $uploaded );
+				$uploaded   = $this->save_to_dir();
+				$attach_ids = $this->save_to_db( $uploaded );
 			} catch ( Exception $exception ) {
 				echo $exception->getMessage();
 			}
+
+			return $attach_ids;
 		}
 
 		/**
@@ -74,8 +80,12 @@
 		 * Files must first be uploaded to the server.
 		 *
 		 * @param array $files Files whose information you want to save to the database.
+		 *
+		 * @return array IDs of the added files.
 		 */
 		private function save_to_db( array $files ) {
+			$attach_ids = [];
+
 			foreach ( $files as $file ) {
 				// Check the post type that we will use in the 'post_mime_type' field.
 				$filetype = wp_check_filetype( basename( $file ), null );
@@ -102,7 +112,10 @@
 				// Create metadata for the attachment and update the record in the database.
 				$attach_data = wp_generate_attachment_metadata( $attach_id, $file );
 				wp_update_attachment_metadata( $attach_id, $attach_data );
+				array_push( $attach_ids, $attach_id );
 			}
+
+			return $attach_ids;
 		}
 
 		/**
