@@ -140,8 +140,8 @@
 		}
 
 		/**
-		 * @param string $path Путь хранения файлов.
-		 * @param string $path_filename_ext Путь файла.
+		 * @param string $path File storage path.
+		 * @param string $path_filename_ext File path.
 		 *
 		 * @return string New path to the file.
 		 */
