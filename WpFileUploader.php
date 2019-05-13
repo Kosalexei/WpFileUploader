@@ -1,20 +1,23 @@
 <?php
 
+	/**
+	 * Class WpFileUploader.
+	 */
 	class WpFileUploader {
 		/**
-		 * @var array Список файлов, которые будут сохранены.
+		 * @var array List of files to be saved.
 		 */
 		private $files = [];
 
 		/**
-		 * @var string Путь сохранения файлов по-умолчанию
+		 * @var string The path to save files by default.
 		 */
 		private $path_to_save;
 
 		/**
 		 * WpFileUploader constructor.
 		 *
-		 * @param array $files Список файлов, которые будут сохранены.
+		 * @param array $files List of files to be saved.
 		 */
 		public function __construct( array $files ) {
 			$this->files        = $files;
@@ -22,11 +25,11 @@
 		}
 
 		/**
-		 * Сохраняет файлы в директорию без сохранения информации в базу данных.
+		 * Saves files to a directory without saving information to the database.
 		 *
-		 * @param string | null $path Путь, куда будут сохранены файлы.
+		 * @param string|null $path The path where the files will be saved.
 		 *
-		 * @return array Список путей сохраненный файлов.
+		 * @return array List of paths saved files.
 		 */
 		public function save_to_dir( $path = null ) {
 			if ( $path === null ) {
@@ -39,7 +42,7 @@
 				foreach ( $this->files as $file ) {
 					$path_filename_ext = $path . $file["name"];
 
-					// Если такой файл с таким именем уже существует, то генерируем новое имя файла.
+					// If such a file with the same name already exists, then generate a new file name.
 					if ( file_exists( $path_filename_ext ) ) {
 						$path_filename_ext = $this->generate_new_filename( $path, $path_filename_ext );
 					}
@@ -55,7 +58,7 @@
 		}
 
 		/**
-		 * Добавление файлов в Библиотеку файлов Wordpress.
+		 * Add files to the Wordpress File Library.
 		 */
 		public function save_to_wordpress() {
 			try {
@@ -67,20 +70,20 @@
 		}
 
 		/**
-		 * Сохранение информации о файлах в базе данных Wordpress.
-		 * Файлы предварительно должны быть загружены на сервер.
+		 * Save information about files in Wordpress database.
+		 * Files must first be uploaded to the server.
 		 *
-		 * @param array $files Файлы, информацию о которых нужно сохранить в базу данных.
+		 * @param array $files Files whose information you want to save to the database.
 		 */
 		private function save_to_db( array $files ) {
 			foreach ( $files as $file ) {
-				// Проверим тип поста, который мы будем использовать в поле 'post_mime_type'.
+				// Check the post type that we will use in the 'post_mime_type' field.
 				$filetype = wp_check_filetype( basename( $file ), null );
 
-				// Получим путь до директории загрузок.
+				// Get the path to the downloads directory.
 				$wp_upload_dir = wp_upload_dir();
 
-				// Подготовим массив с необходимыми данными для вложения.
+				// Prepare an array with the necessary data for the attachment.
 				$attachment = array(
 					'guid'           => $wp_upload_dir['url'] . '/' . basename( $file ),
 					'post_mime_type' => $filetype['type'],
@@ -89,32 +92,32 @@
 					'post_status'    => 'inherit'
 				);
 
-				// Вставляем запись в базу данных.
+				// Insert a record into the database.
 				$attach_id = wp_insert_attachment( $attachment, $file, 0 );
 
-				// Подключим нужный файл, если он еще не подключен
-				// wp_generate_attachment_metadata() зависит от этого файла.
+				// Connect the desired file if it is not already connected.
+				// wp_generate_attachment_metadata() depends on this file.
 				require_once( ABSPATH . 'wp-admin/includes/image.php' );
 
-				// Создадим метаданные для вложения и обновим запись в базе данных.
+				// Create metadata for the attachment and update the record in the database.
 				$attach_data = wp_generate_attachment_metadata( $attach_id, $file );
 				wp_update_attachment_metadata( $attach_id, $attach_data );
 			}
 		}
 
 		/**
-		 * Получить путь сохранения файлов по-умолчанию.
+		 * Get the path to save files by default.
 		 *
-		 * @return string Путь сохранения файлов.
+		 * @return string The path to save files.
 		 */
 		public function get_path_to_save() {
 			return $this->path_to_save;
 		}
 
 		/**
-		 * Сгенерировать путь сохранения файлов по-умолчанию.
+		 * Generate the path to save files by default.
 		 *
-		 * @return string Путь сохранения файлов.
+		 * @return string The path to save files.
 		 */
 		private function generate_path_to_save() {
 			$wp_upload_dir = wp_upload_dir();
@@ -127,7 +130,7 @@
 		 * @param string $path Путь хранения файлов.
 		 * @param string $path_filename_ext Путь файла.
 		 *
-		 * @return string Новый путь до файла.
+		 * @return string New path to the file.
 		 */
 		private function generate_new_filename( $path, $path_filename_ext ) {
 			$new_path_filename_ext = $path_filename_ext;
